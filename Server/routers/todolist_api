@@ -1,0 +1,63 @@
+const express = require("express");
+const router = express.Router();
+const TodoList = require("../Models/TodoLists");
+
+router.get("/api/todolist", async (req, res) => {
+  try {
+    const todolists = await TodoList.find();
+    res.json(todolists);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get("/api/todolist/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const todo = await TodoList.findById(id);
+    res.json(todo);
+  } catch (err) {
+    res.status(404).json({ error: err.message });
+  }
+});
+
+router.post("/api/todolist", async (req, res) => {
+  try {
+    const { title, text } = req.body;
+    const newTodolist = new TodoList({ title, text });
+    await newTodolist.save();
+    res.json(newTodolist);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.put("/api/todolist/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const { title, text } = req.body;
+    const updateTodolist = await TodoList.findByIdAndUpdate(
+      id,
+      { title, text },
+    );
+
+    res.json(updateTodolist);
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+router.delete("/api/todolist/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const deleteTodo = await TodoList.findByIdAndDelete(id);
+    if (!deleteTodo) {
+      return res.status(404).json({ error: "Todo not found" });
+    }
+    res.json({ message: "Todo deleted successfully" });
+  } catch (err) {
+    res.status(400).json({ error: "Invalid ID format or server error" });
+  }
+});
+
+module.exports = router;
